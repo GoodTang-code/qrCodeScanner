@@ -18,12 +18,23 @@
             <p>Click the button to access your camera</p>
             <button class="btn btn-primary" onclick="startScanning()">Scan QR Code</button>
             <button class="btn btn-secondary" onclick="switchCamera()">Switch Camera</button>
+            <button class="btn btn-secondary" onclick="tester()">test</button>
+
             <div id="scanner-container" style="display:none;">
                 <video id="preview" width="100%" height="100%"></video>
             </div>
+
+            <!-- Form to send data to Google Apps Script web app -->
+            <form id="'dataForm" action="https://script.google.com/macros/s/AKfycbzZVxY_-150dNGeUtZyqR-zxTtlKs_d4jykWFMnrqIAFq4Yv6LMmbkl8Z0Jun9MQGNV/exec" method="POST">
+                <input name="timestamp" id="timestamp">
+                <input name="url" id="url">
+                <input type="submit">
+            </form>
         </div>
     </div>
-    
+
+    <!-- <iframe src="https://script.google.com/macros/s/AKfycbxZao-pmoVvmFhhFMLBDNqpHkKWFw26qsKlSB36jch_xghGaP4_ycUt5mL6CDLF3i_h/exec"></iframe>
+     -->
     <!-- Bootstrap JS and Popper.js (required for Bootstrap) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- QR Code Scanner Library -->
@@ -33,6 +44,36 @@
 
     <script>
         let scanner; // Declare scanner as a global variable
+        let formElement = document.querySelector('form')
+
+        // Test data transfer to google sheet
+        function tester() {
+            let content = 'https://github.com/levinunnink/html-form-to-google-sheet';
+            document.getElementById('timestamp').value = new Date().toISOString();
+            document.getElementById('url').value = content;
+            console.log(formElement.value)
+            const confirmed = confirm(`Do you want to go to:\n${content}`);
+                if (confirmed) {
+                    document.getElementById('dataForm').submit();
+                    // window.location.href = content;
+                }
+        }
+
+        // formElement.addEventListener('submit', (e) => {
+        //     e.preventDefault();
+        //     let data = new FormData(formElement);
+        //     fetch('https://script.google.com/macros/s/AKfycbzZVxY_-150dNGeUtZyqR-zxTtlKs_d4jykWFMnrqIAFq4Yv6LMmbkl8Z0Jun9MQGNV/exec', {
+        //         method:"POST",
+        //         // headers: {
+        //         //     'Content-Type': 'application/x-www-form-urlencoded',
+        //         // },
+        //         body: data,
+        //         mode: 'no-cors', // Include this line to handle CORS
+        //     })
+        //     .then(res => res.text())
+        //     .then(data =>console.log('data:', data));
+
+        // })
 
         function startScanning() {
             // Hide button and show scanner container
@@ -46,13 +87,17 @@
                 mirror: false, // This option flips the camera feed horizontally
             });
 
+
             // Callback function when a QR code is scanned
             scanner.addListener('scan', function (content) {
                 // Show confirmation before redirecting
                 const confirmed = confirm(`Do you want to go to:\n${content}`);
                 if (confirmed) {
-                    // Store timestamp and URL in Google Sheets
-                    storeDataInGoogleSheets(content);
+                    // Store timestamp and URL in the form
+                    document.getElementById('timestamp').value = new Date().toISOString();
+                    document.getElementById('url').value = content;
+                    // Submit the form to Google Apps Script web app
+                    document.getElementById('dataForm').submit();
                     // Redirect to the scanned URL
                     window.location.href = content;
                 }
@@ -93,14 +138,6 @@
             }).catch(function (e) {
                 console.error(e);
             });
-        }
-     
-        function storeDataInGoogleSheets(url) {
-            // Get the current timestamp
-            const timestamp = new Date().toISOString();
-
-            // Send data to Google Apps Script
-            google.script.run.appendData(timestamp, url);
         }
     </script>
 
