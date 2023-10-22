@@ -54,7 +54,7 @@
             formData.append('timestamp', new Date().toISOString());
             formData.append('url', url);
 
-            fetch(form.action, {
+            fetch(document.getElementById('dataForm').action, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
