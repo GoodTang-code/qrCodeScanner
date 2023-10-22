@@ -50,8 +50,6 @@
         
         // Test data transfer to google sheet
         function recordData(url) {
-            document.getElementById('url').value = content;
-
             const formData = new FormData();
             formData.append('timestamp', new Date().toISOString());
             formData.append('url', url);
@@ -66,7 +64,7 @@
                 // follow: 'manual',
             })
             .then(response => {
-                window.location.href = content;
+                window.location.href = url;
             })
             .catch(error => {
                 console.error('Error:', error);
