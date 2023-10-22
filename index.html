@@ -133,29 +133,28 @@
             });
         }
 
+        let currentCameraIndex = 0; // Keep track of the current camera index
         function switchCamera() {
             // Stop the current camera
             scanner.stop();
 
-            // Access the camera again, but switch to the other camera
+            // Access the camera again, but switch to the next available camera
             Instascan.Camera.getCameras().then(function (cameras) {
                 alert('Available cameras:', cameras);
 
-                if (cameras.length > 1) {
-                    // Use the second camera (index 1) which is usually the back camera
-                    alert('Switching to back camera:', cameras[1]);
-                    scanner.start(cameras[1]);
-                } else if (cameras.length > 0) {
-                    // Use the first camera if there's only one available
-                    alert('Switching to first camera:', cameras[0]);
-                    scanner.start(cameras[0]);
+                if (cameras.length > 0) {
+                    // Use the next camera (cycle through the available cameras)
+                    currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+
+                    alert(`Switching to camera ${currentCameraIndex}:`, cameras[currentCameraIndex]);
+                    scanner.start(cameras[currentCameraIndex]);
                 } else {
                     alert('No cameras found.');
                 }
             }).catch(function (e) {
                 console.error(e);
-            });
-        }
+        });
+}
     </script>
 
 </body>
