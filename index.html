@@ -21,7 +21,7 @@
             <button class="btn btn-secondary" onclick="tester()">test</button>
 
             <div id="scanner-container" style="display:none;">
-                <video id="preview" width="100%" height="100%"></video>
+                <video id="preview" width="100%" height="50%"></video>
             </div>
 
             <!-- Form to send data to Google Apps Script web app -->
@@ -46,51 +46,33 @@
 
     <script>
         let scanner; // Declare scanner as a global variable
+        let currentCameraIndex = 0; // Keep track of the current camera index
         
         // Test data transfer to google sheet
-        function tester() {
-            let content = 'https://github.com/levinunnink/html-form-to-google-sheet';
-            document.getElementById('timestamp').value = new Date().toISOString();
+        function recordData(url) {
             document.getElementById('url').value = content;
-            const confirmed = confirm(`Do you want to go to:\n${content}`);
-            if (confirmed) {
-                // document.getElementById('dataForm').submit();
-                
-                // window.location.href = content;
 
-                // Manually construct form data
-                let form = document.getElementById('dataForm');
-                const formData = new FormData(document.getElementById('dataForm'));
-                // const formDat = new FormData();
-                // formData.append('timestamp', timestamp);
-                // formData.append('url', url);
-                console.log(formData)
-                fetch(form.action, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams(formData).toString(),
-                    mode: 'no-cors',
-                    // follow: 'manual',
-                })
-                .then(response => {
-                    window.location.href = content;
-                    // alert('QRCODE submitted successfully!');
-                    // console.log(response)
-                    // if (response.ok) {
-                    // } else {
-                    //     alert('Form submission failed.');
-                    // }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred during form submission.');
-                });
-            }
+            const formData = new FormData();
+            formData.append('timestamp', new Date().toISOString());
+            formData.append('url', url);
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(formData).toString(),
+                mode: 'no-cors',
+                // follow: 'manual',
+            })
+            .then(response => {
+                window.location.href = content;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during form submission.');
+            });
         }
-        
-        
 
         function startScanning() {
             // Hide button and show scanner container
@@ -106,25 +88,20 @@
 
 
             // Callback function when a QR code is scanned
-            scanner.addListener('scan', function (content) {
+            scanner.addListener('scan', function (url) {
                 // Show confirmation before redirecting
-                const confirmed = confirm(`Do you want to go to:\n${content}`);
+                const confirmed = confirm(`Do you want to go to:\n${url}`);
                 if (confirmed) {
-                    // Store timestamp and URL in the form
-                    document.getElementById('timestamp').value = new Date().toISOString();
-                    document.getElementById('url').value = content;
-                    // Submit the form to Google Apps Script web app
-                    document.getElementById('dataForm').submit();
-                    // Redirect to the scanned URL
-                    window.location.href = content;
+                    recordData(url);
                 }
             });
 
             // Start scanning
             Instascan.Camera.getCameras().then(function (cameras) {
                 if (cameras.length > 0) {
-                    // Use the first available camera
-                    scanner.start(cameras[0]);
+                    // Use the last available camera
+                    scanner.start(cameras[cameras.length-1]);
+                    currentCameraIndex = cameras.length-1;
                 } else {
                     alert('No cameras found.');
                 }
@@ -133,20 +110,17 @@
             });
         }
 
-        let currentCameraIndex = 0; // Keep track of the current camera index
         function switchCamera() {
             // Stop the current camera
             scanner.stop();
 
             // Access the camera again, but switch to the next available camera
             Instascan.Camera.getCameras().then(function (cameras) {
-                alert('Available cameras:', cameras);
 
                 if (cameras.length > 0) {
                     // Use the next camera (cycle through the available cameras)
                     currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
 
-                    alert(`Switching to camera ${currentCameraIndex}:`, cameras[currentCameraIndex]);
                     scanner.start(cameras[currentCameraIndex]);
                 } else {
                     alert('No cameras found.');
