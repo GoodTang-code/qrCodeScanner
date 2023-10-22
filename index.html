@@ -45,8 +45,12 @@
 
             // Callback function when a QR code is scanned
             scanner.addListener('scan', function (content) {
-                alert('Scanned: ' + content);
-                // You can add further actions here, such as sending data to Google Sheets
+                // Show confirmation before redirecting
+                const confirmed = confirm(`Do you want to go to:\n${content}`);
+                if (confirmed) {
+                    // Redirect to the scanned URL
+                    window.location.href = content;
+                }
             });
 
             // Start scanning
@@ -68,11 +72,15 @@
 
             // Access the camera again, but switch to the other camera
             Instascan.Camera.getCameras().then(function (cameras) {
+                console.log('Available cameras:', cameras);
+
                 if (cameras.length > 1) {
                     // Use the second camera (index 1) which is usually the back camera
+                    console.log('Switching to back camera:', cameras[1]);
                     scanner.start(cameras[1]);
                 } else if (cameras.length > 0) {
                     // Use the first camera if there's only one available
+                    console.log('Switching to first camera:', cameras[0]);
                     scanner.start(cameras[0]);
                 } else {
                     alert('No cameras found.');
